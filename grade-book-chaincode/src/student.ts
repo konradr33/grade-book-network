@@ -9,7 +9,7 @@ export class StudentContract extends Contract {
     public async InitLedger(ctx: Context): Promise<void> {
         const assets: Array<Grade | Subject> = [
             {
-                ID: 'subject/1',
+                ID: 'subject.1',
                 leader: '',
                 name: '',
                 description: '',
@@ -17,7 +17,7 @@ export class StudentContract extends Contract {
                 timestamp: Date.now(),
             },
             {
-                ID: 'subject/2',
+                ID: 'subject.2',
                 leader: '',
                 name: '',
                 description: '',
@@ -25,7 +25,7 @@ export class StudentContract extends Contract {
                 timestamp: Date.now(),
             },
             {
-                ID: 'subject/3',
+                ID: 'subject.3',
                 leader: '',
                 name: '',
                 description: '',
@@ -33,37 +33,37 @@ export class StudentContract extends Contract {
                 timestamp: Date.now(),
             },
             {
-                ID: 'grade/user2/1/1',
+                ID: 'grade.user2.1.1',
                 grade: '5',
                 issuer: '',
                 timestamp: Date.now(),
             },
             {
-                ID: 'grade/user2/1/2',
+                ID: 'grade.user2.1.2',
                 grade: '5',
                 issuer: '',
                 timestamp: Date.now(),
             },
             {
-                ID: 'grade/user3/1/1',
+                ID: 'grade.user3.1.1',
                 grade: '5',
                 issuer: '',
                 timestamp: Date.now(),
             },
             {
-                ID: 'grade/user1/1/1',
+                ID: 'grade.user1.1.1',
                 grade: '5',
                 issuer: '',
                 timestamp: Date.now(),
             },
             {
-                ID: 'grade/user1/1/2',
+                ID: 'grade.user1.1.2',
                 grade: '2',
                 issuer: '',
                 timestamp: Date.now(),
             },
             {
-                ID: 'grade/user1/1/3',
+                ID: 'grade.user1.1.3',
                 grade: '4',
                 issuer: '',
                 timestamp: Date.now(),
@@ -85,7 +85,7 @@ export class StudentContract extends Contract {
         const username =  ctx.clientIdentity.getAttributeValue('hf.EnrollmentID');
         const subjects: Subject[] = [];
 
-        const iterator = await ctx.stub.getStateByRange('subject/', 'subject0');
+        const iterator = await ctx.stub.getStateByRange('subject.', 'subject/');
         let result = await iterator.next();
         while (!result.done) {
             const strValue = Buffer.from(result.value.value.toString()).toString('utf8');
@@ -110,10 +110,10 @@ export class StudentContract extends Contract {
         }
 
         const username =  ctx.clientIdentity.getAttributeValue('hf.EnrollmentID');
-        const subjectHash =  subjectID.split('/').length > 1 ? subjectID.split('/')[1] : '';
+        const subjectHash =  subjectID.split('.').length > 1 ? subjectID.split('.')[1] : '';
         const grades: Grade[] = [];
 
-        const iterator = await ctx.stub.getStateByRange(`grade/${username}/${subjectHash}/`, `grade/${username}/${subjectHash}0`);
+        const iterator = await ctx.stub.getStateByRange(`grade.${username}.${subjectHash}.`, `grade.${username}.${subjectHash}/`);
         let result = await iterator.next();
         while (!result.done) {
             const strValue = Buffer.from(result.value.value.toString()).toString('utf8');
