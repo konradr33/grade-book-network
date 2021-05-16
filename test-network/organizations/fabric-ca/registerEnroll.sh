@@ -30,9 +30,14 @@ function createOrg1() {
   fabric-ca-client register --caname ca-org1 --id.name peer0 --id.secret peer0pw --id.type peer --tls.certfiles "${PWD}/organizations/fabric-ca/org1/tls-cert.pem"
   { set +x; } 2>/dev/null
 
+  infoln "Registering second admin"
+  set -x
+  fabric-ca-client register --caname ca-org1 --id.name admin2 --id.secret admin2pw --id.type client --id.attrs 'role=admin' --tls.certfiles "${PWD}/organizations/fabric-ca/org1/tls-cert.pem"
+  { set +x; } 2>/dev/null
+
   infoln "Registering user"
   set -x
-  fabric-ca-client register --caname ca-org1 --id.name user1 --id.secret user1pw --id.type client --tls.certfiles "${PWD}/organizations/fabric-ca/org1/tls-cert.pem"
+  fabric-ca-client register --caname ca-org1 --id.name user1 --id.secret user1pw --id.type client --id.attrs 'role=student' --tls.certfiles "${PWD}/organizations/fabric-ca/org1/tls-cert.pem"
   { set +x; } 2>/dev/null
 
   infoln "Registering the org admin"

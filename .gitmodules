@@ -1,0 +1,6 @@
+[submodule "grade-book-webapp"]
+	path = grade-book-webapp
+	url = git@github.com:konradr33/grade-book-webapp.git
+[submodule "grade-book-application"]
+	path = grade-book-application
+	url = git@github.com:konradr33/grade-book-application.git
