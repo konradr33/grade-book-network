@@ -1,0 +1,44 @@
+import { createHash } from 'crypto';
+import { Context } from 'fabric-contract-api';
+
+export async function iterateOverState<T>(ctx: Context, startKey: string, endKey: string, callback: (a: T) => void ): Promise<void> {
+  const iterator = await ctx.stub.getStateByRange(startKey, endKey);
+  let result = await iterator.next();
+  while (!result.done) {
+    const strValue = Buffer.from(result.value.value.toString()).toString('utf8');
+    let record: T;
+    try {
+      record = JSON.parse(strValue);
+      callback(record);
+    } catch (err) {
+      console.info('Error during parsing', err);
+    }
+    result = await iterator.next();
+  }
+}
+
+export function assertUserRole(ctx: Context, expectedRole: string): void {
+  if (!ctx.clientIdentity.assertAttributeValue('role', expectedRole)) {
+    throw new Error(`The user does not have the ${expectedRole} role` );
+  }
+}
+
+export function getHexHash(input: string): string {
+  return createHash('sha256').update(input).digest('hex');
+}
+
+export function getSubjectHash(subjectID: string): string {
+  const splitSubject = subjectID.split('.');
+  if (splitSubject.length > 1) {
+    return splitSubject[1];
+  } else {
+    throw new Error(`Incorrect subject id ${subjectID}` );
+  }
+}
+
+export async function getFromState<T>(ctx: Context, id: string): Promise<undefined|T> {
+  const source = await ctx.stub.getState(id);
+  if (source.length > 0) {
+  return JSON.parse(source.toString()) as T;
+  } else { return; }
+}

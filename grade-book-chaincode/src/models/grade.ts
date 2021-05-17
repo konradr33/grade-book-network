@@ -16,5 +16,8 @@ export class Grade implements IObjectBase {
     public description?: string;
 
     @Property()
-    public timestamp: number;
+    public updatedAt: number;
+
+    @Property()
+    public createdAt: number;
 }

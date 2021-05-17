@@ -1,12 +1,14 @@
 import {Context, Contract, Info, Transaction} from 'fabric-contract-api';
 import {Grade} from './models/grade';
 import {Subject} from './models/subject';
+import { assertUserRole, getSubjectHash, iterateOverState } from './utils';
 
 @Info({title: 'Student', description: 'Smart contract for getting student grades, subjects'})
 export class StudentContract extends Contract {
-
     @Transaction()
     public async InitLedger(ctx: Context): Promise<void> {
+        const timestamp: number = ctx.stub.getTxTimestamp().seconds.low * 1000;
+
         const assets: Array<Grade | Subject> = [
             {
                 ID: 'subject.1',
@@ -14,7 +16,8 @@ export class StudentContract extends Contract {
                 name: '',
                 description: '',
                 students: ['user1'],
-                timestamp: Date.now(),
+                createdAt: timestamp,
+                updatedAt: timestamp,
             },
             {
                 ID: 'subject.2',
@@ -22,7 +25,8 @@ export class StudentContract extends Contract {
                 name: '',
                 description: '',
                 students: ['user1'],
-                timestamp: Date.now(),
+                createdAt: timestamp,
+                updatedAt: timestamp,
             },
             {
                 ID: 'subject.3',
@@ -30,43 +34,50 @@ export class StudentContract extends Contract {
                 name: '',
                 description: '',
                 students: ['user1'],
-                timestamp: Date.now(),
+                createdAt: timestamp,
+                updatedAt: timestamp,
             },
             {
-                ID: 'grade.user2.1.1',
+                ID: 'grade.1.user1.1',
                 grade: '5',
                 issuer: '',
-                timestamp: Date.now(),
+                createdAt: timestamp,
+                updatedAt: timestamp,
             },
             {
-                ID: 'grade.user2.1.2',
+                ID: 'grade.1.user1.2',
                 grade: '5',
                 issuer: '',
-                timestamp: Date.now(),
+                createdAt: timestamp,
+                updatedAt: timestamp,
             },
             {
-                ID: 'grade.user3.1.1',
+                ID: 'grade.1.user1.1',
                 grade: '5',
                 issuer: '',
-                timestamp: Date.now(),
+                createdAt: timestamp,
+                updatedAt: timestamp,
             },
             {
-                ID: 'grade.user1.1.1',
+                ID: 'grade.1.user1.1',
                 grade: '5',
                 issuer: '',
-                timestamp: Date.now(),
+                createdAt: timestamp,
+                updatedAt: timestamp,
             },
             {
-                ID: 'grade.user1.1.2',
+                ID: 'grade.1.user1.2',
                 grade: '2',
                 issuer: '',
-                timestamp: Date.now(),
+                createdAt: timestamp,
+                updatedAt: timestamp,
             },
             {
-                ID: 'grade.user1.1.3',
+                ID: 'grade.1.user1.3',
                 grade: '4',
                 issuer: '',
-                timestamp: Date.now(),
+                createdAt: timestamp,
+                updatedAt: timestamp,
             },
         ];
 
@@ -78,54 +89,32 @@ export class StudentContract extends Contract {
 
     @Transaction(false)
     public async GetSubjects(ctx: Context): Promise<Subject[]> {
-        if (!ctx.clientIdentity.assertAttributeValue('role', 'student')) {
-            throw new Error(`Client is not a student`);
-        }
-
+        assertUserRole(ctx, 'student');
+        console.info(ctx.stub.getTxID());
         const username =  ctx.clientIdentity.getAttributeValue('hf.EnrollmentID');
         const subjects: Subject[] = [];
 
-        const iterator = await ctx.stub.getStateByRange('subject.', 'subject/');
-        let result = await iterator.next();
-        while (!result.done) {
-            const strValue = Buffer.from(result.value.value.toString()).toString('utf8');
-            let subject: Subject;
-            try {
-                subject = JSON.parse(strValue);
-                if (subject.students.find((value) => username === value)) {
-                    subjects.push(subject);
-                }
-            } catch (err) {
-                console.info('Error during subject parsing', err);
+        await iterateOverState<Subject>(ctx, 'subject.', 'subject/', (subject: Subject) => {
+            if (subject.students.find((value) => username === value)) {
+                subjects.push(subject);
             }
-            result = await iterator.next();
-        }
+        });
+
         return subjects;
     }
 
     @Transaction(false)
     public async GetGrades(ctx: Context, subjectID: string): Promise<Grade[]> {
-        if (!ctx.clientIdentity.assertAttributeValue('role', 'student')) {
-            throw new Error(`Client is not a student`);
-        }
+        assertUserRole(ctx, 'student');
 
         const username =  ctx.clientIdentity.getAttributeValue('hf.EnrollmentID');
-        const subjectHash =  subjectID.split('.').length > 1 ? subjectID.split('.')[1] : '';
+        const subjectHash = getSubjectHash(subjectID);
         const grades: Grade[] = [];
 
-        const iterator = await ctx.stub.getStateByRange(`grade.${username}.${subjectHash}.`, `grade.${username}.${subjectHash}/`);
-        let result = await iterator.next();
-        while (!result.done) {
-            const strValue = Buffer.from(result.value.value.toString()).toString('utf8');
-            let grade: Grade;
-            try {
-                grade = JSON.parse(strValue);
-                grades.push(grade);
-            } catch (err) {
-                console.info('Error during grade parsing', err);
-            }
-            result = await iterator.next();
-        }
+        await iterateOverState<Grade>(ctx, `grade.${subjectHash}.${username}.`, `grade.${subjectHash}.${username}/`, (grade: Grade) => {
+            grades.push(grade);
+        });
+
         return grades;
     }
 
