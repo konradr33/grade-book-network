@@ -1,7 +1,7 @@
 import { Context, Contract, Info, Transaction } from 'fabric-contract-api';
 import { Grade } from './models/grade';
 import { Subject } from './models/subject';
-import { assertUserRole, getHexHash, getSubjectHash, iterateOverState } from './utils';
+import { assertUserRole, getFromState, getHexHash, getSubjectHash, iterateOverState } from './utils';
 
 @Info({ title: 'Teacher', description: 'Smart contract for adding subjects, grades' })
 export class TeacherContract extends Contract {
@@ -118,6 +118,15 @@ export class TeacherContract extends Contract {
   }
 
   private async validateNewGrade(ctx: Context, subjectID: string, studentName: string) {
+    if (await this.AssetExist(ctx, subjectID)) {
+      const subject = await getFromState<Subject>(ctx, subjectID);
+      const student = subject?.students.find((value) => value === studentName);
+      if (!student) {
+        throw new Error(`Student does not belong to subject` );
+      }
+    } else {
+      throw new Error(`Subject with id ${subjectID} does not exist` );
 
+    }
   }
 }
