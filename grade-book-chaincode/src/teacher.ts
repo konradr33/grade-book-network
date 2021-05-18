@@ -1,7 +1,7 @@
 import { Context, Contract, Info, Transaction } from 'fabric-contract-api';
 import { Grade } from './models/grade';
 import { Subject } from './models/subject';
-import { assertUserRole, getFromState, getHexHash, getSubjectHash, iterateOverState } from './utils';
+import { assertUserRole, getAssetType, getFromState, getHexHash, getSubjectHash, iterateOverState } from './utils';
 
 @Info({ title: 'Teacher', description: 'Smart contract for adding subjects, grades' })
 export class TeacherContract extends Contract {
@@ -27,8 +27,73 @@ export class TeacherContract extends Contract {
     }
     const newSubject: Subject = { ID: id, ...subjectProto };
     await ctx.stub.putState(id, Buffer.from(JSON.stringify(newSubject)));
-    console.info('created subject', newSubject);
     return newSubject;
+  }
+
+  @Transaction(true)
+  public async UpdateSubject(
+    ctx: Context,
+    subjectID: string,
+    name: string,
+    description: string,
+    studentsJSON: string,
+  ): Promise<Subject> {
+    assertUserRole(ctx, 'teacher');
+
+    const username = ctx.clientIdentity.getAttributeValue('hf.EnrollmentID');
+    let subject: Subject;
+
+    if (!(getAssetType(subjectID) === 'subject')) {
+      throw new Error(`Asset with id ${subjectID} is not a subject`);
+    }
+
+    if (await this.AssetExist(ctx, subjectID)) {
+      subject = await getFromState<Subject>(ctx, subjectID);
+    } else {
+      throw new Error(`Subject with id ${subjectID} does not exist`);
+    }
+
+    if (subject.leader !== username) {
+      throw new Error(`User is not a owner of subject`);
+    }
+
+    const timestamp: number = ctx.stub.getTxTimestamp().seconds.low * 1000;
+
+    const subjectProto = {
+      ...subject,
+      updatedAt: timestamp,
+      students: JSON.parse(studentsJSON),
+      name,
+      description,
+    };
+
+    await ctx.stub.putState(subjectID, Buffer.from(JSON.stringify(subjectProto)));
+    return subjectProto;
+  }
+
+  @Transaction(true)
+  public async DeleteSubject(ctx: Context, subjectID: string): Promise<boolean> {
+    assertUserRole(ctx, 'teacher');
+
+    const username = ctx.clientIdentity.getAttributeValue('hf.EnrollmentID');
+    let subject: Subject;
+
+    if (!(getAssetType(subjectID) === 'subject')) {
+      throw new Error(`Asset with id ${subjectID} is not a subject`);
+    }
+
+    if (await this.AssetExist(ctx, subjectID)) {
+      subject = await getFromState<Subject>(ctx, subjectID);
+    } else {
+      throw new Error(`Subject with id ${subjectID} does not exist`);
+    }
+
+    if (subject.leader !== username) {
+      throw new Error(`User is not a owner of subject`);
+    }
+
+    await ctx.stub.deleteState(subjectID);
+    return true;
   }
 
   @Transaction(true)
@@ -61,7 +126,6 @@ export class TeacherContract extends Contract {
     }
     const newGrade: Grade = { ID: id, ...gradeProto };
     await ctx.stub.putState(id, Buffer.from(JSON.stringify(newGrade)));
-    console.info('created grade', newGrade);
     return newGrade;
   }
 

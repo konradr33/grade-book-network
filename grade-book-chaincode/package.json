@@ -1,7 +1,7 @@
 {
-    "name": "asset-transfer-basic",
+    "name": "grade-book-chaincode",
     "version": "1.0.0",
-    "description": "Asset Transfer Basic contract implemented in TypeScript",
+    "description": "Grade Book contracts implemented in TypeScript",
     "main": "dist/index.js",
     "typings": "dist/index.d.ts",
     "engines": {
@@ -18,7 +18,7 @@
         "prepublishOnly": "npm run build"
     },
     "engineStrict": true,
-    "author": "Hyperledger",
+    "author": "Konrad Radoń",
     "license": "Apache-2.0",
     "dependencies": {
         "fabric-contract-api": "^2.0.0",

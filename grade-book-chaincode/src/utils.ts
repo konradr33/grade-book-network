@@ -41,6 +41,15 @@ export function getSubjectHash(subjectID: string): string {
   }
 }
 
+export function getAssetType(assetID: string): string {
+  const splitSubject = assetID.split('.');
+  if (splitSubject.length > 1) {
+    return splitSubject[0];
+  } else {
+    throw new Error(`Incorrect id ${assetID}`);
+  }
+}
+
 export async function getFromState<T>(ctx: Context, id: string): Promise<undefined | T> {
   const source = await ctx.stub.getState(id);
   if (source.length > 0) {

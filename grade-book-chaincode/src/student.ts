@@ -12,7 +12,7 @@ export class StudentContract extends Contract {
     const assets: Array<Grade | Subject> = [
       {
         ID: 'subject.1',
-        leader: '',
+        leader: 'teacher1',
         name: '',
         description: '',
         students: ['user1'],
@@ -21,7 +21,7 @@ export class StudentContract extends Contract {
       },
       {
         ID: 'subject.2',
-        leader: '',
+        leader: 'teacher1',
         name: '',
         description: '',
         students: ['user1'],
@@ -30,7 +30,7 @@ export class StudentContract extends Contract {
       },
       {
         ID: 'subject.3',
-        leader: '',
+        leader: 'teacher1',
         name: '',
         description: '',
         students: ['user1'],
