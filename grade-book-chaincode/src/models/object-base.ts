@@ -1,3 +1,3 @@
 export interface IObjectBase {
-    ID: string;
+  ID: string;
 }

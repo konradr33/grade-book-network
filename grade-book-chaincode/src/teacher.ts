@@ -5,7 +5,6 @@ import { assertUserRole, getFromState, getHexHash, getSubjectHash, iterateOverSt
 
 @Info({ title: 'Teacher', description: 'Smart contract for adding subjects, grades' })
 export class TeacherContract extends Contract {
-
   @Transaction(true)
   public async CreateSubject(ctx: Context, name: string, description: string, studentsJSON: string): Promise<Subject> {
     assertUserRole(ctx, 'teacher');
@@ -24,16 +23,22 @@ export class TeacherContract extends Contract {
 
     const id = `subject.${getHexHash(JSON.stringify(subjectProto))}`;
     if (await this.AssetExist(ctx, id)) {
-        throw new Error(`Could not create subject with id: ${id}, subject with that id already exists` );
+      throw new Error(`Could not create subject with id: ${id}, subject with that id already exists`);
     }
-    const newSubject: Subject = {  ID: id, ...subjectProto};
+    const newSubject: Subject = { ID: id, ...subjectProto };
     await ctx.stub.putState(id, Buffer.from(JSON.stringify(newSubject)));
     console.info('created subject', newSubject);
     return newSubject;
   }
 
   @Transaction(true)
-  public async CreateGrade(ctx: Context, subjectID: string, studentName: string, grade: string, description: string): Promise<Grade> {
+  public async CreateGrade(
+    ctx: Context,
+    subjectID: string,
+    studentName: string,
+    grade: string,
+    description: string,
+  ): Promise<Grade> {
     assertUserRole(ctx, 'teacher');
 
     const username = ctx.clientIdentity.getAttributeValue('hf.EnrollmentID');
@@ -52,9 +57,9 @@ export class TeacherContract extends Contract {
 
     const id = `grade.${subjectHash}.${studentName}.${getHexHash(JSON.stringify(gradeProto))}`;
     if (await this.AssetExist(ctx, id)) {
-      throw new Error(`Could not create grade with id: ${id}, grade with that id already exists` );
+      throw new Error(`Could not create grade with id: ${id}, grade with that id already exists`);
     }
-    const newGrade: Grade = {  ID: id, ...gradeProto};
+    const newGrade: Grade = { ID: id, ...gradeProto };
     await ctx.stub.putState(id, Buffer.from(JSON.stringify(newGrade)));
     console.info('created grade', newGrade);
     return newGrade;
@@ -68,9 +73,9 @@ export class TeacherContract extends Contract {
     const subjects: Subject[] = [];
 
     await iterateOverState<Subject>(ctx, 'subject.', 'subject/', (subject: Subject) => {
-        if (subject.leader === username) {
-          subjects.push(subject);
-        }
+      if (subject.leader === username) {
+        subjects.push(subject);
+      }
     });
 
     return subjects;
@@ -83,12 +88,12 @@ export class TeacherContract extends Contract {
     const subjectHash = getSubjectHash(subjectID);
     const grades: Grade[] = [];
 
-    if (!await this.AssetExist(ctx, subjectID)) {
-      throw new Error(`Subject with id ${subjectID} does not exist` );
+    if (!(await this.AssetExist(ctx, subjectID))) {
+      throw new Error(`Subject with id ${subjectID} does not exist`);
     }
 
     await iterateOverState<Grade>(ctx, `grade.${subjectHash}.`, `grade.${subjectHash}/`, (grade: Grade) => {
-        grades.push(grade);
+      grades.push(grade);
     });
 
     return grades;
@@ -122,11 +127,10 @@ export class TeacherContract extends Contract {
       const subject = await getFromState<Subject>(ctx, subjectID);
       const student = subject?.students.find((value) => value === studentName);
       if (!student) {
-        throw new Error(`Student does not belong to subject` );
+        throw new Error(`Student does not belong to subject`);
       }
     } else {
-      throw new Error(`Subject with id ${subjectID} does not exist` );
-
+      throw new Error(`Subject with id ${subjectID} does not exist`);
     }
   }
 }
