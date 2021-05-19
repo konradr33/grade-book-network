@@ -58,3 +58,27 @@ export async function getFromState<T>(ctx: Context, id: string): Promise<undefin
     return;
   }
 }
+
+export async function assetExist(ctx: Context, id: string): Promise<boolean> {
+  const state = await ctx.stub.getState(id);
+  return state.length > 0;
+}
+
+export function getUserFromGradeID(gradeID: string): string {
+  const splitSubject = gradeID.split('.');
+  if (splitSubject.length === 4) {
+    return splitSubject[2];
+  } else {
+    throw new Error(`Incorrect grade id ${gradeID}`);
+  }
+}
+
+export async function getHistory<T>(promiseOfIterator): Promise<T[]> {
+  const history = [];
+
+  for await (const res of promiseOfIterator) {
+    history.push(JSON.parse(res.value.toString('utf8')));
+  }
+
+  return history;
+}

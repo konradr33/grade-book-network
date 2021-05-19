@@ -19,6 +19,9 @@ export class Subject implements IObjectBase {
   public description: string;
 
   @Property()
+  public removed?: boolean;
+
+  @Property()
   public updatedAt: number;
 
   @Property()

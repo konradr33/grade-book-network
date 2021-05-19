@@ -13,7 +13,10 @@ export class Grade implements IObjectBase {
   public grade: string;
 
   @Property()
-  public description?: string;
+  public description: string;
+
+  @Property()
+  public removed?: boolean;
 
   @Property()
   public updatedAt: number;
