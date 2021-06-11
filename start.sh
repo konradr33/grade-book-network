@@ -19,6 +19,6 @@ sudo rm -rf system-genesis-block
 ./network.sh down
 ./network.sh up -ca
 ./network.sh createChannel -c $CC_CHANNEL
-./network.sh deployCC -ccn $CC_NAME -ccl $CC_LANGUAGE -ccp "$CC_PATH" -c $CC_CHANNEL -cci InitLedger
+./network.sh deployCC -ccn $CC_NAME -ccl $CC_LANGUAGE -ccp "$CC_PATH" -c $CC_CHANNEL -cci InitLedger -cccg "$CC_PATH"/collections_config.json
 
 cp organizations/peerOrganizations/org1.example.com/connection-org1.json ../grade-book-application/assets/connection-config.json
