@@ -20,7 +20,7 @@ export class IdentityContract extends Contract {
     ctx.stub.putPrivateData(collectionName, login, data);
   }
 
-  @Transaction(true)
+  @Transaction(false)
   public async GetStudentsList(ctx: Context): Promise<string[]> {
     assertUserRole(ctx, 'teacher');
 

@@ -137,9 +137,9 @@ export class TeacherContract extends Contract {
     assertUserRole(ctx, 'teacher');
 
     const username = ctx.clientIdentity.getAttributeValue('hf.EnrollmentID');
-    await TeacherContract.getValidatedSubject(ctx, username, subjectID);
+    const subject: Subject = await TeacherContract.getValidatedSubject(ctx, username, subjectID);
 
-    await ctx.stub.deleteState(subjectID);
+    await ctx.stub.putState(subject.ID, Buffer.from(JSON.stringify({ ...subject, removed: true })));
     return true;
   }
 
@@ -220,7 +220,7 @@ export class TeacherContract extends Contract {
     const username = ctx.clientIdentity.getAttributeValue('hf.EnrollmentID');
     const gradeAsset = await TeacherContract.getValidatedGrade(ctx, username, gradeID);
 
-    await ctx.stub.deleteState(gradeAsset.ID);
+    await ctx.stub.putState(gradeAsset.ID, Buffer.from(JSON.stringify({ ...gradeAsset, removed: true })));
     return true;
   }
 
